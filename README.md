@@ -94,7 +94,18 @@ Manages parsing and analyzing CSV files.
 
 
 ## UML Diagram
+
+### Class diagram
+
 ![Architecture class cloud](./Archi_cloud.png)
+
+### Sequence diagram
+
+![Sequence Architecture cloud](./Archi_cloud_sequence.png)
+
+### Deployment diagram
+
+![Deployment Architecture cloud](./Archi_cloud_deployment.png)
 
 
 ## Comparison Between Lambda and Java Application Worker
