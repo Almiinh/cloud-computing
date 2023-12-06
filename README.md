@@ -1,5 +1,7 @@
 # Cloud Project Group 9
 
+![image cloud aws](./Aws_cloud_project_image.png)
+
 
 ## Overview
 
