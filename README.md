@@ -1,93 +1,139 @@
-# Cloud computing
+# Cloud Project Group 9
 
 
+## Overview
 
-## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+This project is a Java application utilizing the AWS SDK to create a client-server architecture for efficient file processing and data analysis. It integrates with various AWS services such as Amazon S3 and SQS, offering a scalable and robust solution for handling data storage and message queueing.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+This work was made by the Group 9 of the cloud computing course.
 
-## Add your files
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Prerequisites
 
-```
-cd existing_repo
-git remote add origin https://gitlab.emse.fr/julien.seailles/cloud-computing.git
-git branch -M main
-git push -uf origin main
-```
 
-## Integrate with your tools
+- Java Development Kit (JDK)
+- Maven
+- AWS SDK for Java
 
-- [ ] [Set up project integrations](https://gitlab.emse.fr/julien.seailles/cloud-computing/-/settings/integrations)
 
-## Collaborate with your team
+## Setup
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
 
-## Test and Deploy
+### Adding Dependencies
 
-Use the built-in continuous integration in GitLab.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+The pom.xml file should handle this when importing the repo. You should use it to install all dependencies and avoid any conflicts.
 
-***
 
-# Editing this README
+## Modules
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
 
-## Suggestions for a good README
+### Client Application (`ClientApp.java`)
+Handles file uploading to S3 buckets and message sending to SQS queues.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+### SQS Message Handling
+- `SQSSendMessage`: Manages sending messages to SQS.
+- `SQSRetrieveMessage`: Retrieves messages from SQS.
+- `SQSDeleteMessageClient`: Deletes messages from SQS.
+- `SQSCreateQueue`: Creates new SQS queues.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### EC2 Worker (`EC2Worker`)
+Processes files from S3 based on SQS messages.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### CSV Parser (`CSVParser`)
+Manages parsing and analyzing CSV files.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Transaction Processors
+- `TransactionAggregate`: Aggregate information from the CSV file to compute statistics.
+- `Transcation`: Adapt CSV and data format before data processing and computation.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### S3 Controllers
+- `S3ControllerCreate`: Creates S3 buckets.
+- `S3ControllerGetObject`: Retrieves objects from S3.
+- `S3ControllerPutObject`: Uploads objects to S3.
+- `S3ControllerAnalyseData`: Performs data analysis on CSV data.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### Data Models
+- `Transaction`: Models a single transaction record.
+- `TransactionAggregate`: Aggregates transactions for analysis.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## Solution Architecture
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
 
-## License
-For open source projects, say how it is licensed.
+### System Interaction
+- The **Client Application** initiates the process by uploading files to **Amazon S3** and sending messages to **Amazon SQS**.
+- The **EC2 Worker** listens to SQS messages, processes files from S3, and communicates results back through SQS.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
+### Data Flow
+- Data flow starts from local file upload to S3, followed by message queueing in SQS, processing in EC2 or Lambda, and finally results storage in S3.
+
+
+## AWS Services Used
+
+
+- **Amazon S3**: Used for storing and retrieving data files.
+- **Amazon SQS**: Manages message queues for coordinating between different application components.
+- **Amazon EC2**: Hosts the Java application worker for processing data.
+- **AWS Lambda**: Optionally used for serverless computing.
+
+
+## Justification of Architecture and AWS Services
+
+
+- The use of **S3** ensures reliable and scalable storage.
+- **SQS** offers a robust system for message queuing and decoupling components.
+- **EC2** provides a flexible environment for running complex Java applications.
+- **Lambda** offers a serverless option, reducing operational overhead.
+
+
+## UML Diagram
+[Include UML Diagram here]
+
+
+## Comparison Between Lambda and Java Application Worker
+
+
+### Performance
+- Lambda offers quick scalability whereas EC2 provides consistent performance.
+
+
+### Cost
+- Lambda has a pay-per-use model, beneficial for sporadic workloads, while EC2 incurs costs based on instance uptime.
+
+
+### Scalability
+- Lambda scales automatically, while EC2 requires manual scaling.
+
+
+### Maintainability
+- Lambda functions are easier to deploy and manage compared to managing EC2 instances.
+
+
+## Running the Application
+
+
+1. Install all prerequisites.
+2. Configure AWS credentials.
+3. Compile the project with Maven.
+4. Execute `ClientApp.java` to start.
+
+
+## Troubleshooting
+
+
+- Common issues include AWS service misconfigurations, network issues, or dependency conflicts.
+
+
+## Contact Information
+
+
+- Minh-Hoang Huynh: minh-hoang.huynh@etu.emse.fr
+- Ninon Lahiani: ext.21m2017@etu.emse.fr
+- Julien Séailles: julien.seailles@etu.emse.fr
