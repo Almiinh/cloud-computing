@@ -12,14 +12,13 @@ public class ClientApp {
 
     public static void main(String[] args) {
         try {
-            String nameBucket = "";
-            String filePathString = "";
-            String nameSendFile = "";
-            String queueURl ="";
+            String nameBucket = "mybucket95110";
+            String filePathString = "data/01-10-2022-store1.csv";
+            String nameSendFile = filePathString;
+            String queueURl = "";
             String pathForCopyObject = "";
 
             // Create a bucket for the Web-Queue-Worker architecture
-
             S3ControllerCreate.main(new String[]{nameBucket});
 
             sleep(4000); // We add some delay in order to do not have any error because of the time it takes to create the bucket
@@ -47,8 +46,7 @@ public class ClientApp {
 
             System.out.println("\n" + "Sending a message to the Inbox queue with the bucket and file names");
 
-            SqsClient sqsClient = SqsClient.builder()
-                    .build();
+            SqsClient sqsClient = SqsClient.builder().build();
 
             SQSSendMessage.sendMessages(sqsClient, "INBOX", nameBucket,nameSendFile);
 

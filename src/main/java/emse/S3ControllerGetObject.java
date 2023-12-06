@@ -14,30 +14,6 @@ import java.io.OutputStream;
 
 public class S3ControllerGetObject {
 
-    public static void main(String[] args) {
-
-        final String INSTRUCTIONS = "\n" +
-                "Instructions:\n" +
-                "    <s3BucketName> <objectKey> <outputFilePath>\n\n" +
-                "Where:\n" +
-                "    s3BucketName - the name of the S3 bucket. \n" +
-                "    objectKey - the object key in S3. \n" +
-                "    outputFilePath - the local file path to save the object. \n";
-
-        if (args.length != 3) {
-            System.out.println(INSTRUCTIONS);
-            System.exit(1);
-        }
-
-        String bucketName = args[0];
-        String objectKey = args[1];
-        String localFilePath = args[2];
-
-        S3Client s3Client = S3Client.builder().build();
-
-        downloadObject(s3Client, bucketName, objectKey, localFilePath);
-        s3Client.close();
-    }
 
     /**
      * Downloads an object from S3 and writes it to a specified file path.
@@ -70,5 +46,30 @@ public class S3ControllerGetObject {
             System.err.println("S3 error: " + e.awsErrorDetails().errorMessage());
             System.exit(1);
         }
+    }
+
+    public static void main(String[] args) {
+
+        final String INSTRUCTIONS = "\n" +
+                "Instructions:\n" +
+                "    <s3BucketName> <objectKey> <outputFilePath>\n\n" +
+                "Where:\n" +
+                "    s3BucketName - the name of the S3 bucket. \n" +
+                "    objectKey - the object key in S3. \n" +
+                "    outputFilePath - the local file path to save the object. \n";
+
+        if (args.length != 3) {
+            System.out.println(INSTRUCTIONS);
+            System.exit(1);
+        }
+
+        String bucketName = args[0];
+        String objectKey = args[1];
+        String localFilePath = args[2];
+
+        S3Client s3Client = S3Client.builder().build();
+
+        downloadObject(s3Client, bucketName, objectKey, localFilePath);
+        s3Client.close();
     }
 }

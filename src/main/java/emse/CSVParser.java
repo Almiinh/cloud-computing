@@ -21,7 +21,7 @@ public class CSVParser {
                 CSVReader csvFileReader = new CSVReader(fileReader);
         ) {
             List<ArrayList<Integer>> salesDataByCountryAndProduct = new ArrayList<>();
-            TransactionRecord transactionRecords = new TransactionAggregate();
+            TransactionAggregate transactionAggregate = new TransactionAggregate();
 
             String[] record;
             csvFileReader.skip(1); // Skip the header row
@@ -32,7 +32,7 @@ public class CSVParser {
                 String productPrice = record[3];
                 String countryName = record[8];
                 // Creating a Transaction instance
-                transactionRecords.addTransaction(new Transaction(productName, countryName, Integer.parseInt(productPrice)));
+                transactionAggregate.addTransaction(new Transaction(productName, countryName, Integer.parseInt(productPrice)));
             }
 
             // Attempting to create a new file
@@ -51,11 +51,13 @@ public class CSVParser {
             // Writing analysis results into the file
             try (FileWriter fileWriter = new FileWriter("data.txt")) {
                 String lineSeparator = System.getProperty("line.separator");
-                for (String country : transactionRecords.getCountries()) {
+                for (String country : transactionAggregate.getCountries()) {
                     fileWriter.write("Country: " + country + lineSeparator);
-                    fileWriter.write("Average sales per product in " + country + ": " + transactionRecords.averageSalesPerCountryPerProduct(country) + "$" + lineSeparator);
-                    for (String product : transactionRecords.getProducts()) {
-                        fileWriter.write("Sales of " + product + ": " + transactionRecords.totalSalesByCountryAndProduct(country, product) + " units, TOTAL: " + transactionRecords.salesAmountByCountryAndProduct(country, product) + "$" + lineSeparator);
+                    fileWriter.write("Average sales in " + country + ": " + transactionAggregate.averageSalesPerCountry(country) + "$" + lineSeparator);
+                    for (String product : transactionAggregate.getProducts()) {
+                        fileWriter.write(
+                                "Sales of " + product + ": " + transactionAggregate.totalSalesByCountryAndProduct(country, product) + " units," +
+                                        " TOTAL: " + transactionAggregate.totalSalesByCountryAndProduct(country, product) + "$" + lineSeparator);
                     }
                     fileWriter.write("==========================" + lineSeparator);
                 }
