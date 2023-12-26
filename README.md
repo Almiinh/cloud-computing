@@ -5,97 +5,75 @@
 
 ## Overview
 
-
-This project is a Java application utilizing the AWS SDK to create a client-server architecture for efficient file processing and data analysis. It integrates with various AWS services such as Amazon S3 and SQS, offering a scalable and robust solution for handling data storage and message queueing.
+This project is a Java application utilizing the AWS SDK to create a app-server architecture for efficient file
+processing and data analysis. It integrates with various AWS services such as Amazon S3 and SQS, offering a scalable and
+robust solution for handling data storage and message queueing.
 
 This work was made by the Group 9 of the cloud computing course.
 
+## Project
 
-## Prerequisites
+The group has been tasked with designing an AWS-based solution to consolidate daily sales data from globally distributed
+stores of a large retailer. The solution is divided in three parts:
+- a **Client application** used by the stores upload CSV files to Cloud storage ;
+- a **Worker application** summarizes sales by store and product and stores results in Cloud storage ;
+- a **Consolidator application** calculates retailer's profit and product statistics from summary files.
 
+## Architecture
 
-- Java Development Kit (JDK)
-- Maven
-- AWS SDK for Java
+### App
+#### Client Application (`ClientApp`)
+The application uploads files to Amazon S3 buckets, and sends messages to Amazon SQS queues.
 
+#### Worker Application (`WorkerApp`)
+The application When receiving an SQS Message in `INBOX` queue, downloads sales files from S3, summarizes sales, and
+uploads summary.
 
-## Setup
+It summarizes the daily sales by store and by product:
+- By Store : total profit,
+- By Product: total quantity, total sold, total profit.
 
+#### Consolidator Application (`ConsolidatorApp`)
+The application, when receiving an SQS Message in `OUTBOX` queue, downloads summary files from S3,
+analyzes them saving them locally.
 
-### Adding Dependencies
+It reads the summary results from the files of that date and computes: the total retailer’s profit,the most and least
+profitable stores, and the total quantity, total sold, and total profit per product.
 
+### Package `sale` to summarize Sales
+- `Sale` : Data structure of a Sale
+- `SaleSummary`: Computes statistics for the summary.
+- `SaleHandler`: Reads Sales and Writes SaleSummary file.
 
-The pom.xml file should handle this when importing the repo. You should use it to install all dependencies and avoid any conflicts.
+### Package `s3` to handle S3 Storage Buckets
+- `S3CheckBucket`: Check if an S3 bucket exists.
+- `S3CreateBucket`: Creates S3 buckets.
+- `S3DownloadObject`: Downloads objects from S3.
+- `S3UploadObject`: Uploads objects to S3.
 
-
-## Modules
-
-
-### Client Application (`ClientApp.java`)
-Handles file uploading to S3 buckets and message sending to SQS queues.
-
-
-### SQS Message Handling
-- `SQSSendMessage`: Manages sending messages to SQS.
-- `SQSRetrieveMessage`: Retrieves messages from SQS.
-- `SQSDeleteMessageClient`: Deletes messages from SQS.
-- `SQSCreateQueue`: Creates new SQS queues.
-
-
-### EC2 Worker (`EC2Worker`)
-Processes files from S3 based on SQS messages.
-
-
-### CSV Parser (`CSVParser`)
-Manages parsing and analyzing CSV files.
-
-### Transaction Processors
-- `TransactionAggregate`: Aggregate information from the CSV file to compute statistics.
-- `Transcation`: Adapt CSV and data format before data processing and computation.
-
-### S3 Controllers
-- `S3ControllerCreate`: Creates S3 buckets.
-- `S3ControllerGetObject`: Retrieves objects from S3.
-- `S3ControllerPutObject`: Uploads objects to S3.
-- `S3ControllerAnalyseData`: Performs data analysis on CSV data.
-
-
-### Data Models
-- `Transaction`: Models a single transaction record.
-- `TransactionAggregate`: Aggregates transactions for analysis.
-
-
-## Solution Architecture
-
-
-### System Interaction
-- The **Client Application** initiates the process by uploading files to **Amazon S3** and sending messages to **Amazon SQS**.
-- The **EC2 Worker** listens to SQS messages, processes files from S3, and communicates results back through SQS.
-
-
-### Data Flow
-- Data flow starts from local file upload to S3, followed by message queueing in SQS, processing in EC2 or Lambda, and finally results storage in S3.
-
+### Package `sqs` to handle SQS Queues
+- `SQSCheckQueue`: Check if an SQS queue exists.
+- `SQSCreateQueue`: Creates a queue.
+- `SQSEmptyQueue`: Empty queue.
+- `SQSReceiveMessage`: Receives messages into a `List<Message>`.
+- `SQSSendMessage`: Sends messages as a `List<Message>`.
 
 ## AWS Services Used
-
 
 - **Amazon S3**: Used for storing and retrieving data files.
 - **Amazon SQS**: Manages message queues for coordinating between different application components.
 - **Amazon EC2**: Hosts the Java application worker for processing data.
-- **AWS Lambda**: Optionally used for serverless computing.
-
+- **Amazon Lambda**: Optionally used for serverless computing.
 
 ## Justification of Architecture and AWS Services
 
+- **Amazon S3** ensures reliable and scalable storage.
+- **Amazon SQS** offers a robust system for message queuing and decoupling components.
+- **Amazon EC2** provides a flexible environment for running complex Java applications.
+- **Amazon Lambda** offers a serverless option, reducing operational overhead.
 
-- The use of **S3** ensures reliable and scalable storage.
-- **SQS** offers a robust system for message queuing and decoupling components.
-- **EC2** provides a flexible environment for running complex Java applications.
-- **Lambda** offers a serverless option, reducing operational overhead.
 
-
-## UML Diagram
+## UML Diagrams
 
 ### Class diagram
 
@@ -116,26 +94,21 @@ Manages parsing and analyzing CSV files.
 ### Performance
 - Lambda offers quick scalability whereas EC2 provides consistent performance.
 
-
 ### Cost
 - Lambda has a pay-per-use model, beneficial for sporadic workloads, while EC2 incurs costs based on instance uptime.
-
 
 ### Scalability
 - Lambda scales automatically, while EC2 requires manual scaling.
 
-
 ### Maintainability
 - Lambda functions are easier to deploy and manage compared to managing EC2 instances.
 
-
 ## Running the Application
-
 
 1. Install all prerequisites.
 2. Configure AWS credentials.
 3. Compile the project with Maven.
-4. Execute `ClientApp.java` to start.
+4. Execute `App.java` to start.
 
 
 ## Troubleshooting
@@ -146,7 +119,7 @@ Manages parsing and analyzing CSV files.
 
 ## Contact Information
 
-
-- Minh-Hoang Huynh: minh-hoang.huynh@etu.emse.fr
-- Ninon Lahiani: ext.21m2017@etu.emse.fr
-- Julien Séailles: julien.seailles@etu.emse.fr
+- Minh-Hoang Huynh: minh-hoang.huynh@etu.sale.fr
+- Ninon Lahiani: ext.21m2017@etu.sale.fr
+- Julien Séailles: julien.seailles@etu.sale.fr
+- Utibeabasi Dan: 
