@@ -24,10 +24,12 @@ public class SQSReceiveMessage {
             String queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl();
             ReceiveMessageRequest messageRequest = ReceiveMessageRequest.builder()
                     .queueUrl(queueUrl)
-                    .maxNumberOfMessages(5)
+                    .maxNumberOfMessages(10)
                     .build();
             List<Message> receivedMessages = sqsClient.receiveMessage(messageRequest).messages();
-            System.out.println("[SQS] Receiving " + receivedMessages.size() + " messages");
+            System.out.println("[SQS] Receiving " + receivedMessages.size() + " messages:");
+            for (Message msg : receivedMessages)
+                System.out.println("\t Msg"+ receivedMessages.indexOf(msg) + ": \t"+msg.body());
             return receivedMessages;
 
         } catch (SqsException e) {

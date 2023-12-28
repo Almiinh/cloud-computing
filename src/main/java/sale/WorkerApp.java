@@ -18,7 +18,18 @@ public class WorkerApp {
     public static final String S3PATH_PRODUCT_SUMMARY = "summary/summaryByProduct.csv";
     public static final String LOCALPATH_STORE_SUMMARY = "data/worker/summaryByStore.csv";
     public static final String LOCALPATH_PRODUCT_SUMMARY = "data/worker/summaryByProduct.csv";
-    public static final String LOCALPATH_SAlES = "data/worker/sales.csv";
+    public static final String LOCALPATH_SAlES = "data/worker/";
+
+    public static void writeSummary(String filepath) {
+        // Parse sales.csv
+        SaleSummary summary = SaleSummary.parseSales(filepath);
+
+        // Update stats by store
+        SaleSummary.writeSummaryByStore(summary, LOCALPATH_STORE_SUMMARY);
+
+        // Update stats by products
+        SaleSummary.writeSummaryByProduct(summary, LOCALPATH_PRODUCT_SUMMARY);
+    }
 
     public static void run() throws InterruptedException {
         if (!SQSCheckQueue.exists(INBOX)) SQSCreateQueue.createQueue(INBOX);
@@ -40,9 +51,9 @@ public class WorkerApp {
                     String fileName = messages.get(1).body();
                     System.out.println("[Worker][Message] File: " + fileName);
 
-                    S3DownloadObject.downloadObject(bucketName, fileName, LOCALPATH_SAlES);
+                    S3DownloadObject.downloadObject(bucketName, fileName, LOCALPATH_SAlES + fileName);
 
-                    writeSummary();
+                    writeSummary(LOCALPATH_SAlES + fileName);
 
                     SQSDeleteMessage.deleteMessages(INBOX, messages);
                     S3UploadObject.uploadObject(bucketName, S3PATH_STORE_SUMMARY, LOCALPATH_STORE_SUMMARY);
@@ -61,16 +72,5 @@ public class WorkerApp {
             }
             sleep(60000);
         }
-    }
-
-    public static void writeSummary() {
-        // Parse sales.csv
-        SaleSummary summary = SaleHandler.parseSales(LOCALPATH_SAlES);
-
-        // Update stats by store
-        SaleHandler.writeSummaryByProduct(summary, LOCALPATH_STORE_SUMMARY);
-
-        // Update stats by products
-        SaleHandler.writeSummaryByStore(summary, LOCALPATH_PRODUCT_SUMMARY);
     }
 }

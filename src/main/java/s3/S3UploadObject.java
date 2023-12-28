@@ -11,17 +11,18 @@ import java.util.List;
 
 public class S3UploadObject {
 
-    public static void uploadObject(String bucketName, String objectKey, String filePath) {
+    public static void uploadObject(String bucketName, String objectKey, String filePath, boolean overwrite) {
         try (S3Client s3Client = S3Client.builder().build()) {
             ListObjectsRequest listObjects = ListObjectsRequest.builder().bucket(bucketName).build();
             List<S3Object> objects = s3Client.listObjects(listObjects).contents();
 
             // If file does not already exist
             System.out.println("[S3] Uploading object '" + objectKey + "' to bucket '" + bucketName + "'...");
-            if (objects.stream().noneMatch((S3Object object) -> object.key().equals(objectKey))) {
+            if (objects.stream().noneMatch((S3Object object) -> object.key().equals(objectKey)) || overwrite) {
                 String uploadResult = uploadObjectToS3(bucketName, objectKey, filePath);
-                System.out.println("[S3] Upload result - ETag: " + uploadResult);
-                System.out.println("[S3] Upload completed");
+                System.out.println(uploadResult.isEmpty() ?
+                        "[S3] Upload failed" :
+                        "[S3] Upload completed - ETag: " + uploadResult);
             } else
                 System.out.println("[S3] File already exists");
         }

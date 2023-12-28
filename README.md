@@ -42,8 +42,7 @@ profitable stores, and the total quantity, total sold, and total profit per prod
 
 ### Package `sale` to summarize Sales
 - `Sale` : Data structure of a Sale
-- `SaleSummary`: Computes statistics for the summary.
-- `SaleHandler`: Reads Sales and Writes SaleSummary file.
+- `SaleSummary`: Reads Sales, computes statistics for the summary, and writes SaleSummary file.
 
 ### Package `s3` to handle S3 Storage Buckets
 - `S3CheckBucket`: Check if an S3 bucket exists.
@@ -119,7 +118,7 @@ profitable stores, and the total quantity, total sold, and total profit per prod
 
 ## Contact Information
 
-- Minh-Hoang Huynh: minh-hoang.huynh@etu.sale.fr
-- Ninon Lahiani: ext.21m2017@etu.sale.fr
-- Julien Séailles: julien.seailles@etu.sale.fr
-- Utibeabasi Dan: 
+- Minh-Hoang Huynh: minh-hoang.huynh@etu.emse.fr
+- Ninon Lahiani: ext.21m2017@etu.emse.fr
+- Julien Séailles: julien.seailles@etu.emse.fr
+- Utibeabasi Dan: dautibeabasi@gmail.com

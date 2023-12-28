@@ -39,7 +39,7 @@ public class S3DownloadObject {
                     System.out.println("[S3] File downloaded into " + outputFile.toPath().toUri());
                 }
             } else {
-                System.err.println("[S3] File not found in S3 Bucket: " + Path.of(objectKey).toUri());
+                System.err.println("[S3] File not found in S3 Bucket: " + objectKey);
             }
         } catch (IOException e) {
             System.err.println("[S3] Error writing file: " + e.getMessage());

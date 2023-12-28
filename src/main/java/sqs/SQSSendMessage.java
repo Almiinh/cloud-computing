@@ -23,15 +23,12 @@ public class SQSSendMessage {
             String queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl();
             SendMessageBatchRequest batchRequest = SendMessageBatchRequest.builder().queueUrl(queueUrl).entries(
                     SendMessageBatchRequestEntry.builder().id("msg1").messageBody(bucketName).build(),
-                    SendMessageBatchRequestEntry.builder().id("msg2").messageBody(fileName).delaySeconds(2).build()).build();
+                    SendMessageBatchRequestEntry.builder().id("msg2").messageBody(fileName).delaySeconds(1).build()).build();
             sqsClient.sendMessageBatch(batchRequest);
             System.out.println("[SQS] Message batch successfully sent.");
-            Thread.sleep(1000);
         } catch (SqsException e) {
             System.err.println("[SQS] Error encountered: " + e.awsErrorDetails().errorMessage());
             System.exit(1);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 }

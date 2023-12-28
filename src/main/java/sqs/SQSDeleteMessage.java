@@ -26,9 +26,8 @@ public class SQSDeleteMessage {
             for (Message msg : messageBatch) {
                 DeleteMessageRequest messageDeletionRequest = DeleteMessageRequest.builder().queueUrl(queueUrl).receiptHandle(msg.receiptHandle()).build();
                 sqsClient.deleteMessage(messageDeletionRequest);
-
-                System.out.println("[SQS] Message deleted successfully");
             }
+            System.out.println("[SQS] Deleted " + messageBatch.size() + " messages successfully");
 
         } catch (SqsException e) {
             System.err.println("[SQS] Error during message deletion: " + e.awsErrorDetails().errorMessage());
