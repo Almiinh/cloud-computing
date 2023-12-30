@@ -20,7 +20,7 @@ public class SQSReceiveMessage {
     public static List<Message> receiveMessages(String queueName) {
         System.out.println("[SQS] Receiving messages from " + queueName + "...");
 
-        try (SqsClient sqsClient = SqsClient.builder().build()) {
+        try (SqsClient sqsClient = SqsClient.create()) {
             String queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl();
             ReceiveMessageRequest messageRequest = ReceiveMessageRequest.builder()
                     .queueUrl(queueUrl)

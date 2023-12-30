@@ -20,7 +20,7 @@ public class SQSDeleteMessage {
     public static void deleteMessages(String queueName, List<Message> messageBatch) {
         System.out.println("[SQS] Deleting messages from " + queueName + "...");
 
-        try (SqsClient sqsClient = SqsClient.builder().build()) {
+        try (SqsClient sqsClient = SqsClient.create()) {
             String queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl();
 
             for (Message msg : messageBatch) {

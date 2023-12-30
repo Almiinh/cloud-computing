@@ -1,10 +1,7 @@
 package sqs;
 
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
-import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
-import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
-import software.amazon.awssdk.services.sqs.model.SqsException;
+import software.amazon.awssdk.services.sqs.model.*;
 
 public class SQSSendMessage {
 
@@ -12,20 +9,21 @@ public class SQSSendMessage {
      * This method is used to send a batch of messages to an SQS queue. It includes details about the bucket and the file.
      *
      * @param queueName     The name of the SQS queue.
-     * @param bucketName    The name of the S3 bucket.
-     * @param fileName      The name of the file to be processed.
+     * @param msg    The name of the S3 bucket.
      * @throws SqsException If any issue occurs while sending messages.
      */
-    public static void sendMessages(String queueName, String bucketName, String fileName) {
-        System.out.println("[SQS] Sending batch messages for bucket and file names...");
+    public static void sendMessages(String queueName, String msg) {
+        System.out.println("[SQS] Sending message ...");
 
-        try (SqsClient sqsClient = SqsClient.builder().build()) {
+        try (SqsClient sqsClient = SqsClient.create()) {
             String queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()).queueUrl();
-            SendMessageBatchRequest batchRequest = SendMessageBatchRequest.builder().queueUrl(queueUrl).entries(
-                    SendMessageBatchRequestEntry.builder().id("msg1").messageBody(bucketName).build(),
-                    SendMessageBatchRequestEntry.builder().id("msg2").messageBody(fileName).delaySeconds(1).build()).build();
-            sqsClient.sendMessageBatch(batchRequest);
-            System.out.println("[SQS] Message batch successfully sent.");
+            SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
+                    .queueUrl(queueUrl)
+                    .messageBody(msg)
+                    .messageGroupId(msg)
+                    .build();
+            sqsClient.sendMessage(sendMessageRequest);
+            System.out.println("[SQS] Message successfully sent.");
         } catch (SqsException e) {
             System.err.println("[SQS] Error encountered: " + e.awsErrorDetails().errorMessage());
             System.exit(1);

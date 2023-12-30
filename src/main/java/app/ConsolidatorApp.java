@@ -3,6 +3,7 @@ package app;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import s3.S3DownloadObject;
+import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import sqs.SQSDeleteMessage;
 import sqs.SQSReceiveMessage;
@@ -28,10 +29,11 @@ public class ConsolidatorApp {
     public static void run() throws InterruptedException {
         // Loop to check incoming messages every 10 seconds
         System.out.println("[Consolidator] Checking queue for messages every 10 seconds:");
+        SqsClient sqsClient = SqsClient.create();
         while (true) {
             System.out.println("[Consolidator] Checking queue for messages");
             List<Message> messages = SQSReceiveMessage.receiveMessages(OUTBOX);
-            if (messages.size() >= 4) {
+            if (messages.size() >= 2) {
                 SQSDeleteMessage.deleteMessages(OUTBOX, messages);
                 break;
             }
