@@ -3,52 +3,63 @@ package app;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import s3.S3DownloadObject;
-import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import sqs.SQSDeleteMessage;
 import sqs.SQSReceiveMessage;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.List;
 
+/**
+ * The application, when receiving an SQS Message in `OUTBOX` queue, downloads summary files from S3,
+ * analyzes them saving them locally.
+ *
+ * It reads the summary results from the files of that date and computes: the total retailer’s profit,the most and least
+ * profitable stores, and the total quantity, total sold, and total profit per product.
+ */
 public class ConsolidatorApp {
 
-    public static final String BUCKET_NAME = App.S3_BUCKET_NAME;
     public static final String OUTBOX = "OUTBOX";
-    public static final String S3PATH_STORE_SUMMARY = "summary/summaryByStore.csv";
-    public static final String S3PATH_PRODUCT_SUMMARY = "summary/summaryByProduct.csv";
-    public static final String LOCALPATH_STORE_SUMMARY = "data/consolidator/statsByStore.csv";
-    public static final String LOCALTPATH_PRODUCT_SUMMARY = "data/consolidator/statsByProduct.csv";
-    public static final String CONSOLIDATOR_ANALYSIS = "data/consolidator/analysisResults.txt";
+    public static final String LOCALFOLDER_STATS = "data/consolidator/";
+    public static final String LOCALNAME_ANALYSIS = "analysisResults.txt";
 
-    public static void run() throws InterruptedException {
+    /**
+     * Runs the Consolidator App which analyzes the summary data of the specified date.
+     * @param date Date to input for the analysis
+     */
+    public static void run(String date) {
         // Loop to check incoming messages every 10 seconds
         System.out.println("[Consolidator] Checking queue for messages every 10 seconds:");
-        SqsClient sqsClient = SqsClient.create();
-        while (true) {
-            System.out.println("[Consolidator] Checking queue for messages");
-            List<Message> messages = SQSReceiveMessage.receiveMessages(OUTBOX);
-            if (messages.size() >= 2) {
-                SQSDeleteMessage.deleteMessages(OUTBOX, messages);
-                break;
+        List<Message> messages;
+        while (!(messages = SQSReceiveMessage.receiveMessages(OUTBOX)).isEmpty()) {
+
+            for (Message message : messages) {
+                String bucketName = message.body().split(":")[0];
+                String filePath = message.body().split(":")[1];
+                String fileName = message.body().split("/")[1];
+                S3DownloadObject.downloadObject(bucketName, filePath, LOCALFOLDER_STATS + fileName);
             }
-            Thread.sleep(10000);
+            SQSDeleteMessage.deleteMessages(OUTBOX, messages);
         }
-        S3DownloadObject.downloadObject(BUCKET_NAME, S3PATH_STORE_SUMMARY, LOCALPATH_STORE_SUMMARY);
-        S3DownloadObject.downloadObject(BUCKET_NAME, S3PATH_PRODUCT_SUMMARY, LOCALTPATH_PRODUCT_SUMMARY);
-        analyze(LOCALPATH_STORE_SUMMARY, CONSOLIDATOR_ANALYSIS);
+
+        String[] files = new File(LOCALFOLDER_STATS).list((dir,file) -> file.startsWith(date));
+        if (files != null) {
+            String summaryByProductFile = files[0];
+            String summaryByStoreFile = files[1];
+            analyze(LOCALFOLDER_STATS+summaryByStoreFile, LOCALFOLDER_STATS+summaryByProductFile,
+                    LOCALFOLDER_STATS+ date + '-' + LOCALNAME_ANALYSIS);
+        }
+
     }
 
     /**
      * Analyzes statistics to extract
-     * @param csvFile
+     * @param summaryByStore
      */
-    public static void analyze(String csvFile, String outputFile) {
+    public static void analyze(String summaryByStore, String summaryByProduct, String outputFile) {
         System.out.println("[Consolidator] Analysing CSV data for minimum, maximum, and sum calculations");
 
         float maxProfit = 0;
@@ -56,8 +67,8 @@ public class ConsolidatorApp {
         float totalProfit = 0;
         String mostProfitableStore = null, leastProfitableStore = null;
 
-        // Reads CSV
-        try (Reader in = new FileReader(csvFile)) {
+        // Reads and process store CSV
+        try (Reader in = new FileReader(summaryByStore)) {
             CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
                     .setDelimiter(';')
                     .setHeader("Store", "Total Profit")
@@ -66,13 +77,12 @@ public class ConsolidatorApp {
             Iterable<CSVRecord> records = csvFormat.parse(in);
 
 
-            //It reads the summary results from the files of that date and computes: the total retailer’s profit,the most and least
-            //profitable stores, and the total quantity, total sold, and total profit per product.
-            // Process CSV
+            // It reads the summary results from the files of that date and computes:
+            // the total retailer’s profit,the most and leastprofitable stores,
             for (CSVRecord record : records) {
                 String store = record.get("Store");
                 String profitRecord = record.get("Total Profit");
-                // Remove '$' from "17535.38$"
+                // Remove '$' suffix from "17535.38$"
                 float profit = Float.parseFloat(profitRecord.substring(0, profitRecord.length() - 1));
 
                 totalProfit += profit;
@@ -89,21 +99,43 @@ public class ConsolidatorApp {
             ioe.printStackTrace();
         }
 
+        // Process product CSV
+        List<CSVRecord> productRecords;
+        try (Reader productReader = new FileReader(summaryByProduct)) {
+             CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                     .setDelimiter(';')
+                     .setHeader("Product", "Total_Profit", "Total_Quantity", "Total_Sold")
+                     .setSkipHeaderRecord(true)
+                     .build();
+             productRecords = csvFormat.parse(productReader).getRecords();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
         // Writing analysis results
+        Path path = Path.of(outputFile);
+        DecimalFormat formatter = new DecimalFormat("#.00");
         try (FileWriter writer = new FileWriter(outputFile)) {
-            writer.write("Data Analysis Results\n");
-            writer.write("Total Retailer's Profit: " + totalProfit+"\n");
+            writer.write("Data Analysis Results: " + outputFile + ":\n");
+            writer.write("Total Retailer's Profit: " + formatter.format(totalProfit)+"$\n");
             writer.write("Most Profitable Store: " + mostProfitableStore + "\n");
             writer.write("Least Profitable Store: " + leastProfitableStore + "\n");
-            System.out.println("Data analysis results successfully written into " + Path.of(outputFile).toUri());
 
+            for (CSVRecord record : productRecords) {
+                writer.write("Product: " + record.get("Product") + " \tTotal Quantity: " + record.get("Total_Quantity")
+                        + "\tTotal Sold: " + record.get("Total_Sold") + "\tTotal Profit: " + record.get("Total_Profit") + "\n"
+                );
+            }
+            System.out.println("Data analysis results successfully written into " + path.toUri());
         } catch (IOException e) {
-            System.out.println("An error occurred while writing to the file " + Path.of(outputFile).toUri());
+            System.out.println("An error occurred while writing to the file " + path.toUri());
             e.printStackTrace();
         }
 
         try {
-            List<String> lines = Files.readAllLines(Path.of(outputFile));
+            List<String> lines = Files.readAllLines(path);
             for (String fileLine : lines)
                 System.out.println(fileLine);
         } catch (IOException e) {

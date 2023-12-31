@@ -23,19 +23,6 @@ public class S3CreateBucket {
                     .bucket(bucketName)
                     .build();
 
-            // Define the bucket policy to allow public access
-            String bucketPolicy = "{\n" +
-                    "  \"Version\": \"2012-10-17\",\n" +
-                    "  \"Statement\": [\n" +
-                    "    {\n" +
-                    "      \"Effect\": \"Allow\",\n" +
-                    "      \"Principal\": \"*\",\n" +
-                    "      \"Action\": \"s3:GetObject\",\n" +
-                    "      \"Resource\": \"arn:aws:s3:::" + bucketName + "/*\"\n" +
-                    "    }\n" +
-                    "  ]\n" +
-                    "}";
-
             s3Client.createBucket(createBucketRequest);
             HeadBucketRequest waitRequest = HeadBucketRequest.builder()
                     .bucket(bucketName)

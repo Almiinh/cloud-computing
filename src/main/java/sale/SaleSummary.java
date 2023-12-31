@@ -3,46 +3,48 @@ package sale;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
+import java.io.*;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class computes statistics to summarize sales.
  */
 public class SaleSummary {
+    private static final Map<String, SaleSummary> summaries = new HashMap<>();
     private final List<Sale> allSales = new ArrayList<>();
     private final Set<String> stores = new HashSet<>();     // A set allows to only keep unique values
     private final Set<String> products = new HashSet<>();   // which is useful for filtering by set
     private final DecimalFormat currencyFormat = new DecimalFormat("0.00");
 
-    private SaleSummary(){
+    private SaleSummary() {
+    }
+
+    public static SaleSummary createOrGetSummary(String date) {
+        SaleSummary summary = summaries.get(date);
+        if (summary == null) {
+            summary = new SaleSummary();
+            summaries.put(date, summary);
+        }
+        return summary;
     }
 
     /**
-     * Parses the CSV file to build the summary
+     * Parses the CSV file to update the summary
      *
-     * @param filePath file to parse
+     * @param file File to parse
      * @return a SaleSummary
      */
-    public static SaleSummary parseSales(String filePath) {
-        SaleSummary summary = new SaleSummary();
-        try (Reader file = new FileReader(filePath)) {
+    public static void parseSales(SaleSummary summary, String file) {
+        try (Reader fileReader = new FileReader(file)) {
             // Parse records from CSV
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.builder()
                     .setDelimiter(';')
                     .setHeader("Date_Time", "Store", "Product", "Quantity", "Unit_Price", "Unit_Cost", "Unit_Profit", "Total_Price")
                     .setSkipHeaderRecord(true)
                     .build()
-                    .parse(file);
+                    .parse(fileReader);
 
             // Iterate over each record in CSV
             for (CSVRecord record : records) {
@@ -59,54 +61,59 @@ public class SaleSummary {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return summary;
     }
 
-    private void addSale(Sale sale) {
-        allSales.add(sale);
-        products.add(sale.product());
-        stores.add(sale.store());
-    }
+    public static void updateSummaryByStore(SaleSummary summary, String outputFile) {
+        try {
+            // Create the file object from the output file path
+            File file = new File(outputFile);
 
-    public static void writeSummaryByStore(SaleSummary summary, String outputFile) {
-        Path filepath = Path.of(outputFile);
-        boolean appendMode = !Files.exists(filepath);
+            // Ensure parent directories exist
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
 
-        try (FileWriter fileWriter = new FileWriter(outputFile, appendMode)) {
-            // Write the header only at the first line
-            if (!appendMode)
-                fileWriter.write("Store;\"Total Profit\";\n");
-            // Write the stores
-            for (String store : summary.stores)
-                fileWriter.write(store + ";" + summary.totalProfitByStore(store) + "$;\n");
+            // Using try-with-resources for FileWriter
+            try (FileWriter fileWriter = new FileWriter(file)) {
+                // Write the header only at the first line
+                fileWriter.write("Store;Total_Profit;\n");
 
-            System.out.println("[Worker] Data per store successfully updated into " + filepath.toUri());
+                // Write the stores
+                for (String store : summary.stores)
+                    fileWriter.write(store + ';' + summary.totalProfitByStore(store) + "$;\n");
+
+                System.out.println("[Worker] Data per store successfully updated into " + Path.of(file.toURI()).toUri());
+            }
         } catch (IOException e) {
             System.err.println("[Worker] An error occurred while writing to the file.");
             e.printStackTrace();
         }
     }
 
-    public static void writeSummaryByProduct(SaleSummary summary, String outputFile) {
+    public static void updateSummaryByProduct(SaleSummary summary, String outputFile) {
         Path filepath = Path.of(outputFile);
-        boolean appendMode = Files.exists(filepath);
 
-        try (FileWriter fileWriter = new FileWriter(outputFile, appendMode)) {
+        try (FileWriter fileWriter = new FileWriter(outputFile)) {
 
             // Write the header only at the first line
-            if (!appendMode)
-                fileWriter.write("Product;\"Total Profit\";\"Total Quantity\";\"Total Sold\"\n");
+            fileWriter.write("Product;Total_Profit;Total_Quantity;Total_Sold\n");
             // Write the summary per product
             for (String product : summary.products)
                 fileWriter.write(product + ";" + summary.totalProfitByProduct(product) + "$;"
-                        + summary.totalQuantityByProduct(product) + "$;"
-                        + "\"" + summary.totalSoldByProduct(product) + " units\";\n");
+                        + summary.totalQuantityByProduct(product) + " units;"
+                        + "\"" + summary.totalSoldByProduct(product) + "$\";\n");
 
             System.out.println("[Worker] Data per product successfully updated into " + filepath.toUri());
         } catch (IOException e) {
             System.err.println("[Worker] An error occurred while writing to the file.");
             e.printStackTrace();
         }
+    }
+
+    private void addSale(Sale sale) {
+        allSales.add(sale);
+        products.add(sale.product());
+        stores.add(sale.store());
     }
 
     private String totalProfitByStore(String store) {

@@ -2,10 +2,7 @@ package sqs;
 
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
-import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 import software.amazon.awssdk.services.sqs.model.SqsException;
-
-import java.util.Map;
 
 public class SQSCreateQueue {
 
@@ -22,10 +19,6 @@ public class SQSCreateQueue {
             System.out.println("[SQS] Creating Queue '" + queueName + "' ...");
             CreateQueueRequest queueCreationRequest = CreateQueueRequest.builder()
                     .queueName(queueName)
-                    .attributes(Map.of(
-                            QueueAttributeName.FIFO_QUEUE, "true",
-                            QueueAttributeName.CONTENT_BASED_DEDUPLICATION, "true"
-                    ))
                     .build();
             sqsClient.createQueue(queueCreationRequest);
             System.out.println("[SQS] Queue created");

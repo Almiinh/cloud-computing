@@ -29,7 +29,7 @@ public class SQSReceiveMessage {
             List<Message> receivedMessages = sqsClient.receiveMessage(messageRequest).messages();
             System.out.println("[SQS] Receiving " + receivedMessages.size() + " messages:");
             for (Message msg : receivedMessages)
-                System.out.println("\t Msg"+ receivedMessages.indexOf(msg) + ": \t"+msg.body());
+                System.out.println("\t Msg" + receivedMessages.indexOf(msg) + ": \t" + msg.body());
             return receivedMessages;
 
         } catch (SqsException e) {

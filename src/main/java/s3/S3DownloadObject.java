@@ -20,7 +20,7 @@ public class S3DownloadObject {
      * @param objectKey  The key of the object in the bucket.
      * @param outputPath The path to write the object to.
      */
-    public static void  downloadObject(String bucketName, String objectKey, String outputPath) {
+    public static void downloadObject(String bucketName, String objectKey, String outputPath) {
         try (S3Client s3Client = S3Client.builder().build()) {
             ListObjectsRequest listObjects = ListObjectsRequest.builder().bucket(bucketName).build();
             List<S3Object> objects = s3Client.listObjects(listObjects).contents();

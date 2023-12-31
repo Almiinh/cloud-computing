@@ -8,8 +8,8 @@ public class SQSSendMessage {
     /**
      * This method is used to send a batch of messages to an SQS queue. It includes details about the bucket and the file.
      *
-     * @param queueName     The name of the SQS queue.
-     * @param msg    The name of the S3 bucket.
+     * @param queueName The name of the SQS queue.
+     * @param msg       The name of the S3 bucket.
      * @throws SqsException If any issue occurs while sending messages.
      */
     public static void sendMessages(String queueName, String msg) {
@@ -20,7 +20,6 @@ public class SQSSendMessage {
             SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
                     .queueUrl(queueUrl)
                     .messageBody(msg)
-                    .messageGroupId(msg)
                     .build();
             sqsClient.sendMessage(sendMessageRequest);
             System.out.println("[SQS] Message successfully sent.");
