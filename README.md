@@ -21,39 +21,43 @@ stores of a large retailer. The solution is divided in three parts:
 
 ## Architecture
 
-### App
-#### Client Application (`ClientApp`)
-The application uploads files to Amazon S3 buckets, and sends messages to Amazon SQS queues.
+### Applications
 
-#### Worker Application (`WorkerApp`)
-The application When receiving an SQS Message in `INBOX` queue, downloads sales files from S3, summarizes sales, and
+App in the project are independent modules
+
+#### Client Application (`client-app`)
+The `ClientApp`application uploads files to Amazon S3 buckets, and sends messages to Amazon SQS queues.
+
+#### Worker Application (`worker-app-ec2` and `worker-app-lambda`)
+The `WorkerApp` application When receiving an SQS Message in `INBOX` queue, downloads sales files from S3, summarizes sales, and
 uploads summary.
 
 It summarizes the daily sales by store and by product:
 - By Store : total profit,
 - By Product: total quantity, total sold, total profit.
 
-#### Consolidator Application (`ConsolidatorApp`)
-The application, when receiving an SQS Message in `OUTBOX` queue, downloads summary files from S3,
+- `Sale` : Data structure of a Sale
+- `SaleSummary`: Reads Sales, computes statistics for the summary, and writes SaleSummary file.
+
+
+#### Consolidator Application (`consolidator-app`)
+The `ConsolidatorApp` application, when receiving an SQS Message in `OUTBOX` queue, downloads summary files from S3,
 analyzes them saving them locally.
 
 It reads the summary results from the files of that date and computes: the total retailer’s profit,the most and least
 profitable stores, and the total quantity, total sold, and total profit per product.
 
-### Package `sale` to summarize Sales
-- `Sale` : Data structure of a Sale
-- `SaleSummary`: Reads Sales, computes statistics for the summary, and writes SaleSummary file.
+### Useful packages
 
-### Package `s3` to handle S3 Storage Buckets
+#### Package `s3` to handle S3 Storage Buckets
 - `S3CheckBucket`: Check if an S3 bucket exists.
 - `S3CreateBucket`: Creates S3 buckets.
 - `S3DownloadObject`: Downloads objects from S3.
 - `S3UploadObject`: Uploads objects to S3.
 
-### Package `sqs` to handle SQS Queues
+#### Package `sqs` to handle SQS Queues
 - `SQSCheckQueue`: Check if an SQS queue exists.
 - `SQSCreateQueue`: Creates a queue.
-- `SQSEmptyQueue`: Empty queue.
 - `SQSReceiveMessage`: Receives messages into a `List<Message>`.
 - `SQSSendMessage`: Sends messages as a `List<Message>`.
 
@@ -104,19 +108,10 @@ profitable stores, and the total quantity, total sold, and total profit per prod
 
 ## Running the Application
 
-1. Install all prerequisites.
-2. Configure AWS credentials.
-3. Compile the project with Maven.
-4. Execute `App.java` to start.
+1. Ensure you have correct AWS credentials see `~/.aws/`
+2. Inside each module, run the .jar with `java -jar <appname>.jar <arguments>`
 
-
-## Troubleshooting
-
-
-- Common issues include AWS service misconfigurations, network issues, or dependency conflicts.
-
-
-## Contact Information
+## Contributing
 
 - Minh-Hoang Huynh: minh-hoang.huynh@etu.emse.fr
 - Ninon Lahiani: ext.21m2017@etu.emse.fr
