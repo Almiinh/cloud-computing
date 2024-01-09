@@ -18,6 +18,9 @@ public class SaleSummary {
     private final Set<String> products = new HashSet<>();   // which is useful for filtering by set
     private final DecimalFormat currencyFormat = new DecimalFormat("0.00");
 
+    public record Sale(String store, String product, int quantity, float price, float profit) {
+    }
+
     private SaleSummary() {
     }
 
