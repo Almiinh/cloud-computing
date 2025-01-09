@@ -1,15 +1,14 @@
-# Cloud Project Group 9
+# Cloud Project
 
 ![image cloud aws](./Aws_cloud_project_image.png)
 
+This group work was made for a cloud computing course at Mines Saint-Étienne.
 
 ## Overview
 
 This project is a Java application utilizing the AWS SDK to create a app-server architecture for efficient file
 processing and data analysis. It integrates with various AWS services such as Amazon S3 and SQS, offering a scalable and
 robust solution for handling data storage and message queueing.
-
-This work was made by the Group 9 of the cloud computing course.
 
 ## Project
 
@@ -80,7 +79,7 @@ profitable stores, and the total quantity, total sold, and total profit per prod
 
 ### Class diagram
 
-![Architecture class cloud](./Archi_cloud.png)
+![Architecture class cloud](./Archi_cloud_class.png)
 
 ### Sequence diagram
 
@@ -110,10 +109,3 @@ profitable stores, and the total quantity, total sold, and total profit per prod
 
 1. Ensure you have correct AWS credentials see `~/.aws/`
 2. Inside each module, run the .jar with `java -jar <appname>.jar <arguments>`
-
-## Contributing
-
-- Minh-Hoang Huynh: minh-hoang.huynh@etu.emse.fr
-- Ninon Lahiani: ext.21m2017@etu.emse.fr
-- Julien Séailles: julien.seailles@etu.emse.fr
-- Utibeabasi Dan: dautibeabasi@gmail.com
